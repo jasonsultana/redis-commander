@@ -24,17 +24,17 @@ namespace Redis.Commander.Data
         {
             if (!File.Exists(_dbOptions.DatabaseName))
             {
-                using var connection = new SqliteConnection(_dbOptions.ConnectionString);
+                using var db = new SqliteConnection(_dbOptions.ConnectionString);
 
                 // Do these sequentially so we don't run into any versioning or locking issues
-                await CreateConnectionTableAsync(connection);
-                await CreateCommandTableAsync(connection);
+                await CreateConnectionTableAsync(db);
+                await CreateCommandTableAsync(db);
             }
         }
 
-        private async Task CreateConnectionTableAsync(IDbConnection connection)
+        private async Task CreateConnectionTableAsync(IDbConnection db)
         {
-            if (await TableExistsAsync(connection, nameof(Connection)))
+            if (await TableExistsAsync(db, nameof(Connection)))
                 return;
 
             var sql = @"
@@ -49,12 +49,12 @@ namespace Redis.Commander.Data
                 );
             ";
 
-            await connection.ExecuteAsync(sql);
+            await db.ExecuteAsync(sql);
         }
 
-        private async Task CreateCommandTableAsync(IDbConnection connection)
+        private async Task CreateCommandTableAsync(IDbConnection db)
         {
-            if (await TableExistsAsync(connection, nameof(Command)))
+            if (await TableExistsAsync(db, nameof(Command)))
                 return;
 
             var sql = @"
@@ -66,12 +66,12 @@ namespace Redis.Commander.Data
                 );
             ";
 
-            await connection.ExecuteAsync(sql);
+            await db.ExecuteAsync(sql);
         }
 
-        private async Task<bool> TableExistsAsync(IDbConnection connection, string tableName)
+        private async Task<bool> TableExistsAsync(IDbConnection db, string tableName)
         {
-            var table = await connection.QueryAsync<string>("SELECT name FROM sqlite_master WHERE type='table' AND name = '@tableName';", new
+            var table = await db.QueryAsync<string>("SELECT name FROM sqlite_master WHERE type='table' AND name = '@tableName';", new
             {
                 tableName
             });

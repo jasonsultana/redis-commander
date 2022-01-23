@@ -35,6 +35,9 @@ namespace Redis.Commander.Blazor
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
+            services.AddSingleton<IConnectionRepository, ConnectionRepository>();
+            services.AddSingleton<ICommandRepository, CommandRepository>();
+
             services.Configure<DbOptions>(Configuration.GetSection(nameof(DbOptions)));
         }
 
