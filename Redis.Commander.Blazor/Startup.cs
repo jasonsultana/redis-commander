@@ -11,7 +11,10 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Redis.Commander.Blazor.Data;
+using Redis.Commander.Data;
+using Redis.Commander.Data.Contracts;
 
 namespace Redis.Commander.Blazor
 {
@@ -31,6 +34,8 @@ namespace Redis.Commander.Blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+
+            services.Configure<DbOptions>(Configuration.GetSection(nameof(DbOptions)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +62,18 @@ namespace Redis.Commander.Blazor
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+
+            // Before opening any window, generate and populate the SQLite database
+            Task.Run(async () =>
+            {
+                var dbConfigInstance = new DbOptions();
+                Configuration.GetSection(nameof(DbOptions)).Bind(dbConfigInstance);
+                var dbOptions = Options.Create<DbOptions>(dbConfigInstance);
+
+                var bootstrapper = new DataBootstrapper(dbOptions);
+                await bootstrapper.BootstrapAsync();
+            })
+            .Wait();
 
             if (HybridSupport.IsElectronActive)
             {

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Dapper" />
+    <None Remove="Microsoft.Data.Sqlite" />
+    <None Remove="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Redis.Commander.Data.Contracts\Redis.Commander.Data.Contracts.csproj" />
+    <ProjectReference Include="..\Redis.Commander.Model\Redis.Commander.Model.csproj" />
+  </ItemGroup>
+</Project>
