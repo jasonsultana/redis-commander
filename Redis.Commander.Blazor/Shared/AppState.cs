@@ -17,6 +17,9 @@ namespace Redis.Commander.Blazor.Shared
 
         public event Action OnChange;
 
-        private void NotifyStateChanged() => OnChange?.Invoke();
+        private void NotifyStateChanged()
+        {
+            OnChange?.Invoke();
+        }
     }
 }

@@ -8,6 +8,9 @@ namespace Redis.Commander.Utils
     {
         public static string Encrypt(string plainText)
         {
+            if (string.IsNullOrWhiteSpace(plainText))
+                return plainText;
+
             using var aes = Aes.Create();
 
             var cypherBytes = EncryptStringToBytes_Aes(plainText, aes.Key, aes.IV);
@@ -18,6 +21,9 @@ namespace Redis.Commander.Utils
 
         public static string Decrypt(string cypherText)
         {
+            if (string.IsNullOrWhiteSpace(cypherText))
+                return cypherText;
+
             using var aes = Aes.Create();
 
             var cypherBytes = System.Text.Encoding.UTF8.GetBytes(cypherText);

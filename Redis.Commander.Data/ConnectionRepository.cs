@@ -77,5 +77,14 @@ namespace Redis.Commander.Data
             using var db = new SqliteConnection(_dbOptions.ConnectionString);
             await db.UpdateAsync(connection);
         }
+
+        public async Task DeleteAsync(int connectionId)
+        {
+            using var db = new SqliteConnection(_dbOptions.ConnectionString);
+            var sql = "DELETE FROM Connection WHERE Id = @ConnectionId";
+            await db.ExecuteAsync(sql, new { ConnectionId = connectionId });
+
+            // We could check the rows affected - but if connectionId doesn't exist already, it doesn't affect the user intent. Fail silently in that case.
+        }
     }
 }

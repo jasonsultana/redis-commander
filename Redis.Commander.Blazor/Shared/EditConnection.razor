@@ -90,10 +90,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (ConnectionId.HasValue)
-        {
-            await ReloadConnectionAsync();
-        }
+        await ReloadConnectionAsync();
 
         // Whenever the state is changed by the parent component, call StateHasChanged to reload the child (this)
         AppState.OnChange += async () =>
@@ -113,7 +110,10 @@ else
         }
         else
         {
-            Connection.Id = await ConnectionRepository.AddAsync(Connection);
+            var newId = await ConnectionRepository.AddAsync(Connection);
+
+            Connection.Id = newId;
+            ConnectionId = newId;
         }
 
         this.Alert = Alert.Success("Connection saved successfully.");
@@ -126,6 +126,11 @@ else
 
     private async Task ReloadConnectionAsync()
     {
-        Connection = await ConnectionRepository.GetAsync(ConnectionId.Value);
+        this.Alert = null;
+
+        if (ConnectionId.HasValue)
+        {
+            Connection = await ConnectionRepository.GetAsync(ConnectionId.Value);
+        }
     }
 }

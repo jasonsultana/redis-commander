@@ -18,13 +18,23 @@
             <ul class="list-group">
                 @foreach (var connection in _connections)
                 {
-                    <li class="list-group-item"><a style="cursor: pointer; color: black;" @onclick="() => EditConnection2(connection.Id)">@connection.Name</a></li>
+                    <li class="list-group-item">
+                        <a style="cursor: pointer; color: black;" @onclick="() => EditConnection(connection.Id)">@connection.Name</a>
+                        <button class="btn btn-link" title="Delete connection" @onclick="() => DeleteConnection(connection.Id)">
+                            <span class="oi oi-x"></span>
+                        </button>
+                    </li>
                 }
             </ul>
         }
     </div>
 
     <div class="col-6">
+        @if (Alert != null)
+        {
+            <div class="alert @Alert.StatusClass">@Alert.StatusMessage</div>
+        }
+
         <EditConnection></EditConnection>
     </div>
 </div>
@@ -32,11 +42,25 @@
 @code {
     private ListConnectionsDto[] _connections = Array.Empty<ListConnectionsDto>();
 
+    public Alert Alert = null;
+
     protected override async Task OnInitializedAsync()
     {
-        _connections = await _connectionRepository.ListConnectionsAsync();
+        await ReloadConnectionsAsync();
+
+        AppState.OnChange += async () =>
+        {
+            await ReloadConnectionsAsync();
+            StateHasChanged();
+        };
 
         await base.OnInitializedAsync();
+    }
+
+    private async Task ReloadConnectionsAsync()
+    {
+        this.Alert = null;
+        _connections = await _connectionRepository.ListConnectionsAsync();
     }
 
     private async Task AddConnection()
@@ -44,9 +68,17 @@
         this.AppState.ConnectionId = null;
     }
 
-    private async Task EditConnection2(int connectionId)
+    private async Task EditConnection(int connectionId)
     {
-        this.AppState.ConnectionId = connectionId; 
+        this.AppState.ConnectionId = connectionId;
+    }
+
+    private async Task DeleteConnection(int connectionId)
+    {
+        await this._connectionRepository.DeleteAsync(connectionId);
+        this.AppState.ConnectionId = null;
+
+        this.Alert = Alert.Success("Connection removed successfully.");
     }
 }
 
