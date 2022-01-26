@@ -7,7 +7,7 @@ namespace Redis.Commander.Data.Contracts
 {
     public interface IConnectionRepository
     {
-        Task AddAsync(Connection connection);
+        Task<int> AddAsync(Connection connection);
 
         Task UpdateAsync(Connection connection);
 

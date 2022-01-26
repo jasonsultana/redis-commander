@@ -1,7 +1,9 @@
 ﻿using System;
+using Dapper.Contrib.Extensions;
 
 namespace Redis.Commander.Model
 {
+    [Table("Connection")]
     public class Connection
     {
         public int Id { get; set; }

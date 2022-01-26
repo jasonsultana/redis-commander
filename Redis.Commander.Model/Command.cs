@@ -1,6 +1,9 @@
 ﻿using System;
+using Dapper.Contrib.Extensions;
+
 namespace Redis.Commander.Model
 {
+    [Table("Command")]
     public class Command
     {
         public int Id { get; set; }

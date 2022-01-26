@@ -8,14 +8,17 @@
     <None Remove="Dapper" />
     <None Remove="Microsoft.Data.Sqlite" />
     <None Remove="Microsoft.Extensions.Options" />
+    <None Remove="Dapper.Contrib" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+    <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Redis.Commander.Data.Contracts\Redis.Commander.Data.Contracts.csproj" />
     <ProjectReference Include="..\Redis.Commander.Model\Redis.Commander.Model.csproj" />
+    <ProjectReference Include="..\Redis.Commander.Utils\Redis.Commander.Utils.csproj" />
   </ItemGroup>
 </Project>

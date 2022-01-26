@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Redis.Commander.Blazor.Data;
+using Redis.Commander.Blazor.Shared;
 using Redis.Commander.Data;
 using Redis.Commander.Data.Contracts;
 
@@ -37,6 +38,9 @@ namespace Redis.Commander.Blazor
 
             services.AddSingleton<IConnectionRepository, ConnectionRepository>();
             services.AddSingleton<ICommandRepository, CommandRepository>();
+
+
+            services.AddSingleton<ConnectionState>();
 
             services.Configure<DbOptions>(Configuration.GetSection(nameof(DbOptions)));
         }

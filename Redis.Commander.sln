@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Commander.Data.Contra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Commander.Model", "Redis.Commander.Model\Redis.Commander.Model.csproj", "{A4D6E3F9-69C2-4972-8E28-F8793D187E93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Commander.Utils", "Redis.Commander.Utils\Redis.Commander.Utils.csproj", "{25A52587-CB59-4693-8C48-674E74C5D464}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{A4D6E3F9-69C2-4972-8E28-F8793D187E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4D6E3F9-69C2-4972-8E28-F8793D187E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4D6E3F9-69C2-4972-8E28-F8793D187E93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25A52587-CB59-4693-8C48-674E74C5D464}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25A52587-CB59-4693-8C48-674E74C5D464}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25A52587-CB59-4693-8C48-674E74C5D464}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25A52587-CB59-4693-8C48-674E74C5D464}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

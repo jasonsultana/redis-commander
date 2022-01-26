@@ -7,6 +7,7 @@ using Redis.Commander.Model;
 using Redis.Commander.Model.DTOs;
 using Dapper;
 using System.Linq;
+using Dapper.Contrib.Extensions;
 
 namespace Redis.Commander.Data
 {
@@ -19,7 +20,7 @@ namespace Redis.Commander.Data
             _dbOptions = options.Value;
         }
 
-        public async Task AddAsync(Command command)
+        public async Task<int> AddAsync(Command command)
         {
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
@@ -28,13 +29,7 @@ namespace Redis.Commander.Data
                 throw new InvalidOperationException($"Unable to insert command with non-zero id: {command.Id}");
 
             using var db = new SqliteConnection(_dbOptions.ConnectionString);
-
-            var sql = @"
-                INSERT INTO Command (Name, Key, Description)
-                Values (@Name, @Key, @Description)
-            ";
-
-            await db.ExecuteAsync(sql, command);
+            return await db.InsertAsync(command);
         }
 
         public async Task<Command> GetAsync(int commandId)
@@ -42,7 +37,6 @@ namespace Redis.Commander.Data
             using var db = new SqliteConnection(_dbOptions.ConnectionString);
 
             var sql = "SELECT * FROM Command WHERE Id = @commandId";
-
             var command = await db.QuerySingleOrDefaultAsync<Command>(sql, new { commandId });
 
             return command;
@@ -68,16 +62,7 @@ namespace Redis.Commander.Data
                 throw new InvalidOperationException("Unable to update command with zero id.");
 
             using var db = new SqliteConnection(_dbOptions.ConnectionString);
-
-            var sql = @"
-                UPDATE Command SET
-                    Name = @Name,
-                    Key = @Key,
-                    Description = @Description
-                WHERE Id = @Id
-            ";
-
-            await db.ExecuteAsync(sql, command);
+            await db.UpdateAsync(command);
         }
     }
 }

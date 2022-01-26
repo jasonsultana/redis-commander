@@ -1,10 +1,13 @@
 ﻿@page "/connections"
 @inject IConnectionRepository _connectionRepository
+@inject ConnectionState AppState;
 
 <div class="row">
     <div class="col-3 item-list">
         <h5 style="display: inline-block;">Connections</h5>
-        <button class="btn btn-link" style="display: inline-block;" title="Add a connection"><span class="oi oi-document"></span></button>
+        <button class="btn btn-link" style="display: inline-block;" title="Add a connection" @onclick="AddConnection">
+            <span class="oi oi-document"></span>
+        </button>
 
         @if (!_connections.Any())
         {
@@ -12,7 +15,12 @@
         }
         else
         {
-
+            <ul class="list-group">
+                @foreach (var connection in _connections)
+                {
+                    <li class="list-group-item"><a style="cursor: pointer; color: black;" @onclick="() => EditConnection2(connection.Id)">@connection.Name</a></li>
+                }
+            </ul>
         }
     </div>
 
@@ -33,7 +41,12 @@
 
     private async Task AddConnection()
     {
-        // todo: the adjacent component should receive an event that tells it to display a blank form
+        this.AppState.ConnectionId = null;
+    }
+
+    private async Task EditConnection2(int connectionId)
+    {
+        this.AppState.ConnectionId = connectionId; 
     }
 }
 

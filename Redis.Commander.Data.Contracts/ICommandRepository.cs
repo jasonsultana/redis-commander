@@ -7,7 +7,7 @@ namespace Redis.Commander.Data.Contracts
 {
     public interface ICommandRepository
     {
-        Task AddAsync(Command command);
+        Task<int> AddAsync(Command command);
 
         Task UpdateAsync(Command command);
 
