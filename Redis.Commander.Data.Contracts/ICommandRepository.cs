@@ -14,5 +14,7 @@ namespace Redis.Commander.Data.Contracts
         Task<ListCommandsDto[]> ListCommandsAsync();
 
         Task<Command> GetAsync(int commandId);
+
+        Task DeleteAsync(int commandId);
     }
 }

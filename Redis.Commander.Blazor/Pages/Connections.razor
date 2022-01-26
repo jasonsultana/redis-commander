@@ -1,57 +1,52 @@
 ﻿@page "/connections"
-@inject IConnectionRepository _connectionRepository
-@inject ConnectionState AppState;
+@inject IConnectionRepository ConnectionRepository
+@inject AppState AppState
 
-<div class="row">
-    <div class="col-3 item-list">
-        <h5 style="display: inline-block;">Connections</h5>
-        <button class="btn btn-link" style="display: inline-block;" title="Add a connection" @onclick="AddConnection">
-            <span class="oi oi-document"></span>
-        </button>
+<div class="col-3 item-list">
+    <h5 style="display: inline-block;">Connections</h5>
+    <button class="btn btn-link" style="display: inline-block;" title="Add a connection" @onclick="AddConnection">
+        <span class="oi oi-document"></span>
+    </button>
 
-        @if (!_connections.Any())
-        {
-            <p>No connections found.</p>
-        }
-        else
-        {
-            <ul class="list-group">
-                @foreach (var connection in _connections)
-                {
-                    <li class="list-group-item">
-                        <a style="cursor: pointer; color: black;" @onclick="() => EditConnection(connection.Id)">@connection.Name</a>
-                        <button class="btn btn-link" title="Delete connection" @onclick="() => DeleteConnection(connection.Id)">
-                            <span class="oi oi-x"></span>
-                        </button>
-                    </li>
-                }
-            </ul>
-        }
-    </div>
+    @if (!ExistingConnections.Any())
+    {
+        <p>No connections found.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var connection in ExistingConnections)
+            {
+                <li class="list-group-item">
+                    <a style="cursor: pointer; color: black;" @onclick="() => EditConnection(connection.Id)">@connection.Name</a>
+                    <button class="btn btn-link" title="Delete connection" @onclick="async () => await DeleteConnectionAsync(connection.Id)">
+                        <span class="oi oi-x"></span>
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</div>
 
-    <div class="col-6">
-        @if (Alert != null)
-        {
-            <div class="alert @Alert.StatusClass">@Alert.StatusMessage</div>
-        }
-
-        <EditConnection></EditConnection>
-    </div>
+<div class="col-7">
+    <EditConnection></EditConnection>
 </div>
 
 @code {
-    private ListConnectionsDto[] _connections = Array.Empty<ListConnectionsDto>();
-
-    public Alert Alert = null;
+    private ListConnectionsDto[] ExistingConnections = Array.Empty<ListConnectionsDto>();
 
     protected override async Task OnInitializedAsync()
     {
         await ReloadConnectionsAsync();
 
-        AppState.OnChange += async () =>
+        AppState.ConnectionState.OnChange += async () =>
         {
             await ReloadConnectionsAsync();
-            StateHasChanged();
+
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
         };
 
         await base.OnInitializedAsync();
@@ -59,26 +54,26 @@
 
     private async Task ReloadConnectionsAsync()
     {
-        this.Alert = null;
-        _connections = await _connectionRepository.ListConnectionsAsync();
+        AppState.Alert.Hide();
+        ExistingConnections = await ConnectionRepository.ListConnectionsAsync();
     }
 
-    private async Task AddConnection()
+    private async Task DeleteConnectionAsync(int connectionId)
     {
-        this.AppState.ConnectionId = null;
+        await ConnectionRepository.DeleteAsync(connectionId);
+
+        AppState.ConnectionState.ConnectionId = null;
+        AppState.Alert.ShowSuccess("Connection removed successfully.");
     }
 
-    private async Task EditConnection(int connectionId)
+    private void AddConnection()
     {
-        this.AppState.ConnectionId = connectionId;
+        AppState.ConnectionState.ConnectionId = null;
     }
 
-    private async Task DeleteConnection(int connectionId)
+    private void EditConnection(int connectionId)
     {
-        await this._connectionRepository.DeleteAsync(connectionId);
-        this.AppState.ConnectionId = null;
-
-        this.Alert = Alert.Success("Connection removed successfully.");
+        AppState.ConnectionState.ConnectionId = connectionId;
     }
 }
 
@@ -87,10 +82,5 @@
         height: 100vh;
         color: white;
         background-color: rgb(39 39 39);
-
-        /*
-        background-color: #485461;
-        background-image: linear-gradient(315deg, #485461 0%, #28313b 74%);
-        */
     }
 </style>

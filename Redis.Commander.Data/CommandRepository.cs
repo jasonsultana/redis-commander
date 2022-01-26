@@ -20,18 +20,6 @@ namespace Redis.Commander.Data
             _dbOptions = options.Value;
         }
 
-        public async Task<int> AddAsync(Command command)
-        {
-            if (command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            if (command.Id > 0)
-                throw new InvalidOperationException($"Unable to insert command with non-zero id: {command.Id}");
-
-            using var db = new SqliteConnection(_dbOptions.ConnectionString);
-            return await db.InsertAsync(command);
-        }
-
         public async Task<Command> GetAsync(int commandId)
         {
             using var db = new SqliteConnection(_dbOptions.ConnectionString);
@@ -53,6 +41,18 @@ namespace Redis.Commander.Data
             return results.ToArray();
         }
 
+        public async Task<int> AddAsync(Command command)
+        {
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
+            if (command.Id > 0)
+                throw new InvalidOperationException($"Unable to insert command with non-zero id: {command.Id}");
+
+            using var db = new SqliteConnection(_dbOptions.ConnectionString);
+            return await db.InsertAsync(command);
+        }
+
         public async Task UpdateAsync(Command command)
         {
             if (command == null)
@@ -63,6 +63,13 @@ namespace Redis.Commander.Data
 
             using var db = new SqliteConnection(_dbOptions.ConnectionString);
             await db.UpdateAsync(command);
+        }
+
+        public async Task DeleteAsync(int commandId)
+        {
+            using var db = new SqliteConnection(_dbOptions.ConnectionString);
+            var sql = "DELETE FROM Command WHERE Id = @CommandId";
+            await db.ExecuteAsync(sql, new { CommandId = commandId });
         }
     }
 }

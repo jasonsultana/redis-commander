@@ -4,6 +4,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="ElectronNET.API" />
+    <None Remove="redis-commander.sqlite" />
+    <None Remove="Shared\State\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ElectronNET.API" Version="13.5.1" />
@@ -23,5 +25,8 @@
     <ProjectReference Include="..\Redis.Commander.Data.Contracts\Redis.Commander.Data.Contracts.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shared\State\" />
   </ItemGroup>
 </Project>

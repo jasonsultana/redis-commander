@@ -1,17 +1,37 @@
 ﻿@inherits LayoutComponentBase
+@inject AppState AppState
 
-<div class="page">
-    <div class="sidebar">
+<div class="page row" style="margin: 0;">
+    <div class="sidebar col-2" style="padding-right: 0;">
         <NavMenu />
     </div>
 
-    @*<div class="main">
-        <div class="content px-4">
-            @Body
+    @if (AppState.Alert.IsVisible)
+    {
+        <div class="alert alert-fixed @AppState.Alert.StatusClass">
+            <span>@AppState.Alert.StatusMessage</span>
+            <button class="btn btn-link" title="Close" @onclick="() => AppState.Alert.Hide()">
+                <span class="oi oi-x"></span>
+            </button>
         </div>
-    </div>*@
+    }
 
-    <div style="width: 100%;">
-        @Body
-    </div>
+    @Body
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AppState.Alert.OnChange += async () =>
+        {
+            // OnChange could be triggered from a background thread that can't update the UI.
+            // Call InvokeAsync to update the UI on the next update cycle (like an AngularJS digest).
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        };
+
+        base.OnInitialized();
+    }
+}

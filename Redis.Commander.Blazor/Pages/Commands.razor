@@ -1,7 +1,50 @@
 ﻿@page "/commands"
+@inject ICommandRepository CommandRepository
+@inject AppState AppState;
 
 <h3>Commands</h3>
 
 @code {
+    private ListCommandsDto[] ExistingCommands = Array.Empty<ListCommandsDto>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadCommandsAsync();
+
+        AppState.CommandState.OnChange += async () =>
+        {
+            await ReloadCommandsAsync();
+
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        };
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ReloadCommandsAsync()
+    {
+        AppState.Alert.Hide();
+        ExistingCommands = await CommandRepository.ListCommandsAsync();
+    }
+
+    private async Task AddCommand()
+    {
+        AppState.CommandState.CommandId = null;
+    }
+
+    private async Task EditCommand(int commandId)
+    {
+        AppState.CommandState.CommandId = commandId;
+    }
+
+    private async Task DeleteCommand(int commandId)
+    {
+        await CommandRepository.DeleteAsync(commandId);
+
+        AppState.CommandState.CommandId = null;
+        AppState.Alert.ShowSuccess("Command removed successfully.");
+    }
 }

@@ -1,5 +1,5 @@
 ﻿@inject IConnectionRepository ConnectionRepository
-@inject ConnectionState AppState;
+@inject AppState AppState
 
 @if (ConnectionId.HasValue)
 {
@@ -11,12 +11,7 @@ else
 }
 
 <section>
-    <EditForm Model="Connection" OnValidSubmit="HandleValidSubmitAsync" OnInvalidSubmit="HandleInvalidSubmitAsync">
-        @if (Alert != null)
-        {
-            <div class="alert @Alert.StatusClass">@Alert.StatusMessage</div>
-        }
-
+    <EditForm Model="Connection" OnValidSubmit="HandleValidSubmitAsync" OnInvalidSubmit="HandleInvalidSubmit">
         @if (ConnectionId.HasValue)
         {
             <div class="form-group row">
@@ -77,11 +72,9 @@ else
 @code {
     public int? ConnectionId
     {
-        get => AppState.ConnectionId;
-        set => AppState.ConnectionId = value;
+        get => AppState.ConnectionState.ConnectionId;
+        set => AppState.ConnectionState.ConnectionId = value;
     }
-
-    public Alert Alert = null;
 
     public Connection Connection { get; set; } = new Connection();
 
@@ -90,13 +83,31 @@ else
         await ReloadConnectionAsync();
 
         // Whenever the state is changed by the parent component, call StateHasChanged to reload the child (this)
-        AppState.OnChange += async () =>
+        AppState.ConnectionState.OnChange += async () =>
         {
             await ReloadConnectionAsync();
-            StateHasChanged();
+
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
         };
 
         await base.OnInitializedAsync();
+    }
+
+    private async Task ReloadConnectionAsync()
+    {
+        AppState.Alert.Hide();
+
+        if (ConnectionId.HasValue)
+        {
+            Connection = await ConnectionRepository.GetAsync(ConnectionId.Value);
+        }
+        else
+        {
+            Connection = new Connection();
+        }
     }
 
     public async Task HandleValidSubmitAsync()
@@ -113,25 +124,11 @@ else
             ConnectionId = newId;
         }
 
-        this.Alert = Alert.Success("Connection saved successfully.");
+        AppState.Alert.ShowSuccess("Connection saved successfully.");
     }
 
-    public async Task HandleInvalidSubmitAsync()
+    public void HandleInvalidSubmit()
     {
-        this.Alert = Alert.Danger("There are some errors on the form.");
-    }
-
-    private async Task ReloadConnectionAsync()
-    {
-        this.Alert = null;
-
-        if (ConnectionId.HasValue)
-        {
-            Connection = await ConnectionRepository.GetAsync(ConnectionId.Value);
-        }
-        else
-        {
-            Connection = new Connection();
-        }
+        AppState.Alert.ShowDanger("There are some errors on the form.");
     }
 }

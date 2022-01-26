@@ -1,7 +1,7 @@
 ﻿using System;
-namespace Redis.Commander.Blazor.Shared
+namespace Redis.Commander.Blazor.Shared.State
 {
-    public class ConnectionState
+    public class ConnectionState : StateBase
     {
         private int? _connectionId;
 
@@ -13,13 +13,6 @@ namespace Redis.Commander.Blazor.Shared
                 _connectionId = value;
                 NotifyStateChanged();
             }
-        }
-
-        public event Action OnChange;
-
-        private void NotifyStateChanged()
-        {
-            OnChange?.Invoke();
         }
     }
 }
