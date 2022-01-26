@@ -1,16 +1,25 @@
 ﻿@page "/connections"
 @inject IConnectionRepository _connectionRepository
 
-<h3>Connections</h3>
+<div class="row">
+    <div class="col-3 item-list">
+        <h5 style="display: inline-block;">Connections</h5>
+        <button class="btn btn-link" style="display: inline-block;" title="Add a connection"><span class="oi oi-document"></span></button>
 
-@if (!_connections.Any())
-{
-    <p>No connections found.</p>
-}
-else
-{
+        @if (!_connections.Any())
+        {
+            <p>No connections found.</p>
+        }
+        else
+        {
 
-}
+        }
+    </div>
+
+    <div class="col-6">
+        <EditConnection></EditConnection>
+    </div>
+</div>
 
 @code {
     private ListConnectionsDto[] _connections = Array.Empty<ListConnectionsDto>();
@@ -21,4 +30,22 @@ else
 
         await base.OnInitializedAsync();
     }
+
+    private async Task AddConnection()
+    {
+        // todo: the adjacent component should receive an event that tells it to display a blank form
+    }
 }
+
+<style>
+    .item-list {
+        height: 100vh;
+        color: white;
+        background-color: rgb(39 39 39);
+
+        /*
+        background-color: #485461;
+        background-image: linear-gradient(315deg, #485461 0%, #28313b 74%);
+        */
+    }
+</style>

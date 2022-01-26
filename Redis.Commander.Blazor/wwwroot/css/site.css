@@ -48,3 +48,8 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.sidebar {
+    background-color: #414141;
+    background-image: none!important; /* override the default */
+}
