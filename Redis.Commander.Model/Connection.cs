@@ -10,7 +10,7 @@ namespace Redis.Commander.Model
 
         public string HostUrl { get; set; } = string.Empty;
 
-        public int Port { get; set; }
+        public int Port { get; set; } = 6379;
 
         public string User { get; set; } = string.Empty;
 

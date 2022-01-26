@@ -83,10 +83,7 @@ else
 
     public Alert Alert = null;
 
-    public Connection Connection { get; set; } = new Connection()
-    {
-        Port = 6379
-    };
+    public Connection Connection { get; set; } = new Connection();
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,6 +128,10 @@ else
         if (ConnectionId.HasValue)
         {
             Connection = await ConnectionRepository.GetAsync(ConnectionId.Value);
+        }
+        else
+        {
+            Connection = new Connection();
         }
     }
 }

@@ -1,21 +1,42 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
+using DeviceId;
 
 namespace Redis.Commander.Utils
 {
     public static class Crypto
     {
+        private static string GetKey()
+        {
+            // Use a unique fingerprint of the user's device as a symmetrical encryption key.
+            // This doesn't guarantee that your creds are safe if your machine is compromised,
+            // but it does mean that your SQLite DB can't just be copied from one machine
+            // to another.
+
+            // Also, if you change your machine name, change network cards, update your OS or change your username,
+            // you'll need to reconfigure your connections. I think that's acceptable.
+
+            // To a certain extent, the onus of protecting access to your physical machine is
+            // on the user.
+            string deviceId = new DeviceIdBuilder()
+                .AddMachineName()
+                .AddMacAddress()
+                .AddOsVersion()
+                .AddUserName()
+                .ToString()
+                .Substring(0, 16);
+
+            return deviceId;
+        }
+
         public static string Encrypt(string plainText)
         {
             if (string.IsNullOrWhiteSpace(plainText))
                 return plainText;
 
-            using var aes = Aes.Create();
-
-            var cypherBytes = EncryptStringToBytes_Aes(plainText, aes.Key, aes.IV);
-            var cypherText = System.Text.Encoding.UTF8.GetString(cypherBytes);
-
+            var cypherText = EncryptString(GetKey(), plainText);
             return cypherText;
         }
 
@@ -24,95 +45,61 @@ namespace Redis.Commander.Utils
             if (string.IsNullOrWhiteSpace(cypherText))
                 return cypherText;
 
-            using var aes = Aes.Create();
-
-            var cypherBytes = System.Text.Encoding.UTF8.GetBytes(cypherText);
-            var plainText = DecryptStringFromBytes_Aes(cypherBytes, aes.Key, aes.IV);
-
+            var plainText = DecryptString(GetKey(), cypherText);
             return plainText;
         }
 
-        static byte[] EncryptStringToBytes_Aes(string plainText, byte[] Key, byte[] IV)
+        private static string EncryptString(string key, string plainText)
         {
-            // Check arguments.
-            if (plainText == null || plainText.Length <= 0)
-                throw new ArgumentNullException("plainText");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            byte[] encrypted;
+            byte[] iv = new byte[16];
+            byte[] array;
 
-            // Create an Aes object
-            // with the specified key and IV.
-            using (Aes aesAlg = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = iv;
 
-                // Create an encryptor to perform the stream transform.
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
-                // Create the streams used for encryption.
-                using (MemoryStream msEncrypt = new MemoryStream())
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
                     {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                        using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
                         {
-                            //Write all data to the stream.
-                            swEncrypt.Write(plainText);
+                            streamWriter.Write(plainText);
                         }
-                        encrypted = msEncrypt.ToArray();
+
+                        array = memoryStream.ToArray();
                     }
                 }
             }
 
-            // Return the encrypted bytes from the memory stream.
-            return encrypted;
+            return Convert.ToBase64String(array);
         }
 
-        static string DecryptStringFromBytes_Aes(byte[] cipherText, byte[] Key, byte[] IV)
+        private static string DecryptString(string key, string cipherText)
         {
-            // Check arguments.
-            if (cipherText == null || cipherText.Length <= 0)
-                throw new ArgumentNullException("cipherText");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
+            byte[] iv = new byte[16];
+            byte[] buffer = Convert.FromBase64String(cipherText);
 
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
-
-            // Create an Aes object
-            // with the specified key and IV.
-            using (Aes aesAlg = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = iv;
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+                using (MemoryStream memoryStream = new MemoryStream(buffer))
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
                         {
-
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
+                            return streamReader.ReadToEnd();
                         }
                     }
                 }
             }
-
-            return plaintext;
         }
     }
 }
