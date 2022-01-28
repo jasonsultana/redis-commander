@@ -1,5 +1,8 @@
 ﻿@inject ICommandRepository CommandRepository
 @inject AppState AppState
+@using System.Text.RegularExpressions
+@using System.Linq;
+@using System.Dynamic;
 
 @if (CommandId.HasValue)
 {
@@ -32,19 +35,39 @@ else
 
         <div class="form-group row">
             <div class="col-12">
-                <label class="form-label">@nameof(Command.Key)</label>
-                <InputText class="form-control" @bind-Value="Command.Key"></InputText>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <div class="col-12">
                 <label class="form-label">@nameof(Command.Description)</label>
                 <InputText class="form-control" @bind-Value="Command.Description"></InputText>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="form-group row">
+            <div class="col-12">
+                <label class="form-label">@nameof(Command.Key)</label>
+                <InputText class="form-control" @bind-Value="Command.Key"></InputText>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Command.Key))
+        {
+            var @params = GetCommandParams();
+
+            foreach (var param in @params)
+            {
+                <div class="form-group row">
+                    <label class="form-label col-4">@param</label>
+                    <div class="col-8">
+                        <!--
+                            Since the dynamic properties aren't known at compile-time, we can't bind to them. Use a plain old HTML
+                            input field and simply server-side handle the change event.
+                        -->
+                        <input type="text" class="form-control" @onchange="@((e) => { HandleCommandParamChanged(param, e?.Value?.ToString()); })"/>
+                    </div>
+                </div>
+            }
+        }
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-success" @onclick="HandleRunClickAsync">Run</button>
     </EditForm>
 </section>
 
@@ -56,6 +79,9 @@ else
     }
 
     public Command Command { get; set; } = new Command();
+
+    // Store the dynamic params inside this dictionary for execution later
+    private Dictionary<string, string> CommandParams = new Dictionary<string, string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,6 +113,28 @@ else
         {
             Command = new Command();
         }
+    }
+
+    private string[] GetCommandParams()
+    {
+        if (string.IsNullOrWhiteSpace(Command.Key))
+            return Array.Empty<string>();
+
+        // find all occurences of {someValue}
+        var pattern = new Regex("\\{(.*?)\\}", RegexOptions.Compiled);
+        var matches = pattern.Matches(Command.Key);
+
+        return matches.Select(m => m.Value.Replace("{", "").Replace("}", "")).ToArray();
+    }
+
+    public void HandleCommandParamChanged(string param, string value)
+    {
+        CommandParams[param] = value;
+    }
+
+    public Task HandleRunClickAsync()
+    {
+        return Task.CompletedTask;
     }
 
     public async Task HandleValidSubmitAsync()
