@@ -62,3 +62,9 @@ a, .btn-link {
     z-index: 9999;
     border-radius: 0px
 }
+
+.item-list {
+    height: 100vh;
+    color: white;
+    background-color: rgb(39 39 39);
+}

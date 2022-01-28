@@ -1,0 +1,114 @@
+﻿@inject ICommandRepository CommandRepository
+@inject AppState AppState
+
+@if (CommandId.HasValue)
+{
+    <h3>Edit Command</h3>
+}
+else
+{
+    <h3>New Command</h3>
+}
+
+<section>
+    <EditForm Model="Command" OnValidSubmit="HandleValidSubmitAsync" OnInvalidSubmit="HandleInvalidSubmit">
+        @if (CommandId.HasValue)
+        {
+            <div class="form-group row">
+                <div class="col-12">
+                    <label class="form-label">
+                        Command: @CommandId
+                    </label>
+                </div>
+            </div>
+        }
+
+        <div class="form-group row">
+            <div class="col-12">
+                <label class="form-label">@nameof(Command.Name)</label>
+                <InputText class="form-control" @bind-Value="Command.Name"></InputText>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-12">
+                <label class="form-label">@nameof(Command.Key)</label>
+                <InputText class="form-control" @bind-Value="Command.Key"></InputText>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-12">
+                <label class="form-label">@nameof(Command.Description)</label>
+                <InputText class="form-control" @bind-Value="Command.Description"></InputText>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </EditForm>
+</section>
+
+@code {
+    public int? CommandId
+    {
+        get => AppState.CommandState.CommandId;
+        set => AppState.CommandState.CommandId = value;
+    }
+
+    public Command Command { get; set; } = new Command();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadCommandAsync();
+
+        // Whenever the state is changed by the parent component, call StateHasChanged to reload the child (this)
+        AppState.CommandState.OnChange += async () =>
+        {
+            await ReloadCommandAsync();
+
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        };
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ReloadCommandAsync()
+    {
+        AppState.Alert.Hide();
+
+        if (CommandId.HasValue)
+        {
+            Command = await CommandRepository.GetAsync(CommandId.Value);
+        }
+        else
+        {
+            Command = new Command();
+        }
+    }
+
+    public async Task HandleValidSubmitAsync()
+    {
+        if (CommandId.HasValue)
+        {
+            await CommandRepository.UpdateAsync(Command);
+        }
+        else
+        {
+            var newId = await CommandRepository.AddAsync(Command);
+
+            Command.Id = newId;
+            CommandId = newId;
+        }
+
+        AppState.Alert.ShowSuccess("Command saved successfully.");
+    }
+
+    public void HandleInvalidSubmit()
+    {
+        AppState.Alert.ShowDanger("There are some errors on the form.");
+    }
+}
+

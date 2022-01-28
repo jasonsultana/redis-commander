@@ -1,8 +1,38 @@
 ﻿@page "/commands"
+@page "/"
+
 @inject ICommandRepository CommandRepository
 @inject AppState AppState;
 
-<h3>Commands</h3>
+<div class="col-3 item-list">
+    <h5 style="display: inline-block;">Commands</h5>
+    <button class="btn btn-link" style="display: inline-block;" title="Add a command" @onclick="AddCommand">
+        <span class="oi oi-document"></span>
+    </button>
+
+    @if (!ExistingCommands.Any())
+    {
+        <p>No commands found.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var command in ExistingCommands)
+            {
+                <li class="list-group-item">
+                    <a style="cursor: pointer; color: black;" @onclick="() => EditCommand(command.Id)">@command.Name</a>
+                    <button class="btn btn-link" title="Delete command" @onclick="async () => await DeleteCommandAsync(command.Id)">
+                        <span class="oi oi-x"></span>
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<div class="col-7">
+    <EditCommand></EditCommand>
+</div>
 
 @code {
     private ListCommandsDto[] ExistingCommands = Array.Empty<ListCommandsDto>();
@@ -30,17 +60,17 @@
         ExistingCommands = await CommandRepository.ListCommandsAsync();
     }
 
-    private async Task AddCommand()
+    private void AddCommand()
     {
         AppState.CommandState.CommandId = null;
     }
 
-    private async Task EditCommand(int commandId)
+    private void EditCommand(int commandId)
     {
         AppState.CommandState.CommandId = commandId;
     }
 
-    private async Task DeleteCommand(int commandId)
+    private async Task DeleteCommandAsync(int commandId)
     {
         await CommandRepository.DeleteAsync(commandId);
 
