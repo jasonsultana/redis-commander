@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Redis.Commander.Client.Contracts\Redis.Commander.Client.Contracts.csproj" />
+    <ProjectReference Include="..\Redis.Commander.Model\Redis.Commander.Model.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="StackExchange.Redis" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.2.88" />
+  </ItemGroup>
+</Project>

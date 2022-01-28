@@ -25,6 +25,12 @@
     <ProjectReference Include="..\Redis.Commander.Data.Contracts\Redis.Commander.Data.Contracts.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Redis.Commander.Client.Contracts\Redis.Commander.Client.Contracts.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Redis.Commander.Client\Redis.Commander.Client.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\State\" />

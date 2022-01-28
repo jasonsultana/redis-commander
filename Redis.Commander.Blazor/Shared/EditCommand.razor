@@ -1,9 +1,7 @@
 ﻿@inject ICommandRepository CommandRepository
 @inject IConnectionRepository ConnectionRepository
+@inject IRedisClient RedisClient
 @inject AppState AppState
-@using System.Text.RegularExpressions
-@using System.Linq;
-@using System.Dynamic;
 
 <section>
     <EditForm Model="SelectedConnection">
@@ -12,9 +10,9 @@
             <div class="col-8">
                 <InputSelect class="form-control" @bind-Value="SelectedConnection.Id" @onchange="HandleSelectedConnectionChangedAsync">
                     @foreach (var connection in Connections)
-                    {
+                        {
                         <option value="@connection.Id">@connection.Name</option>
-                    }
+                        }
                 </InputSelect>
             </div>
         </div>
@@ -23,17 +21,17 @@
 
 <section>
     @if (CommandId.HasValue)
-    {
+        {
         <h3>Edit Command</h3>
-    }
-    else
-    {
+        }
+        else
+        {
         <h3>New Command</h3>
-    }
+        }
 
     <EditForm Model="Command" OnValidSubmit="HandleValidSubmitAsync" OnInvalidSubmit="HandleInvalidSubmit">
         @if (CommandId.HasValue)
-        {
+            {
             <div class="form-group row">
                 <div class="col-12">
                     <label class="form-label">
@@ -41,7 +39,7 @@
                     </label>
                 </div>
             </div>
-        }
+            }
 
         <div class="form-group row">
             <div class="col-12">
@@ -65,11 +63,11 @@
         </div>
 
         @if (!string.IsNullOrWhiteSpace(Command.Key))
-        {
-            var @params = GetCommandParams();
-
-            foreach (var param in @params)
             {
+                var @params = GetCommandParams();
+
+                foreach (var param in @params)
+                {
                 <div class="form-group row">
                     <label class="form-label col-4">@param</label>
                     <div class="col-8">
@@ -80,12 +78,20 @@
                         <input type="text" class="form-control" @onchange="@((e) => { HandleCommandParamChanged(param, e?.Value?.ToString()); })" />
                     </div>
                 </div>
+                }
             }
-        }
 
         <button type="submit" class="btn btn-primary">Save</button>
         <button type="button" class="btn btn-success" @onclick="HandleRunClickAsync">Run</button>
     </EditForm>
+</section>
+
+<section>
+    @if (Result != null)
+    {
+        <h6>Result</h6>
+        <code>@Result</code>
+    }
 </section>
 
 @code {
@@ -100,6 +106,8 @@
     public Connection SelectedConnection = new Connection();
 
     public ListConnectionsDto[] Connections { get; set; } = Array.Empty<ListConnectionsDto>();
+
+    public string Result { get; set; } = null;
 
     // Store the dynamic params inside this dictionary for execution later
     private Dictionary<string, string> CommandParams = new Dictionary<string, string>();
@@ -152,12 +160,38 @@
 
     public void HandleCommandParamChanged(string param, string value)
     {
+        if (string.IsNullOrWhiteSpace(value) && CommandParams.ContainsKey(param))
+        {
+            CommandParams.Remove(param);
+        }
+
         CommandParams[param] = value;
     }
 
-    public Task HandleRunClickAsync()
+    public async Task HandleRunClickAsync()
     {
-        return Task.CompletedTask;
+        if (GetCommandParams().Count() != CommandParams.Keys.Count)
+        {
+            AppState.Alert.ShowDanger("Some key parameters do not have a value.");
+            return;
+        }
+
+        var key = Command.Key.ToString(); // make a copy of the key
+        foreach (var param in CommandParams)
+        {
+            key.Replace($"{{{param.Key}}}", param.Value);
+        }
+
+        try
+        {
+            var result = await RedisClient.GetAsync(SelectedConnection, key);
+            Result = result;
+        }
+        catch (Exception ex)
+        {
+            Result = ex.ToString();
+            AppState.Alert.ShowDanger("Redis client error. See result for details.");
+        }
     }
 
     public async Task HandleSelectedConnectionChangedAsync()
@@ -187,4 +221,3 @@
         AppState.Alert.ShowDanger("There are some errors on the form.");
     }
     }
-
