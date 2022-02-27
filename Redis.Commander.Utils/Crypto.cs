@@ -8,7 +8,7 @@ namespace Redis.Commander.Utils
 {
     public static class Crypto
     {
-        private static string GetKey()
+        public static string GetKey()
         {
             // Use a unique fingerprint of the user's device as a symmetrical encryption key.
             // This doesn't guarantee that your creds are safe if your machine is compromised,
@@ -36,7 +36,7 @@ namespace Redis.Commander.Utils
             if (string.IsNullOrWhiteSpace(plainText))
                 return plainText;
 
-            var cypherText = EncryptString(GetKey(), plainText);
+            var cypherText = EncryptString(plainText);
             return cypherText;
         }
 
@@ -45,61 +45,55 @@ namespace Redis.Commander.Utils
             if (string.IsNullOrWhiteSpace(cypherText))
                 return cypherText;
 
-            var plainText = DecryptString(GetKey(), cypherText);
+            var plainText = DecryptString(cypherText);
             return plainText;
         }
 
-        private static string EncryptString(string key, string plainText)
+        private static string EncryptString(string plainText)
         {
-            byte[] iv = new byte[16];
-            byte[] array;
+            byte[] buffer;
+            using var aes = GetAes();
+            
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
-            using (Aes aes = Aes.Create())
+            using var memoryStream = new MemoryStream();
+            using var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
+            using (var streamWriter = new StreamWriter(cryptoStream))
             {
-                aes.Key = Encoding.UTF8.GetBytes(key);
-                aes.IV = iv;
-
-                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
-                        {
-                            streamWriter.Write(plainText);
-                        }
-
-                        array = memoryStream.ToArray();
-                    }
-                }
+                // The writer needs to be disposed before calling memoryStream.ToArray(), so we need to keep this using block here.
+                streamWriter.Write(plainText);
             }
 
-            return Convert.ToBase64String(array);
+            buffer = memoryStream.ToArray();
+
+            return Convert.ToBase64String(buffer);
         }
 
-        private static string DecryptString(string key, string cipherText)
+        private static string DecryptString(string cipherText)
         {
-            byte[] iv = new byte[16];
-            byte[] buffer = Convert.FromBase64String(cipherText);
+            var buffer = Convert.FromBase64String(cipherText);
+            using var aes = GetAes();
 
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = Encoding.UTF8.GetBytes(key);
-                aes.IV = iv;
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
-                using (MemoryStream memoryStream = new MemoryStream(buffer))
-                {
-                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
-                        {
-                            return streamReader.ReadToEnd();
-                        }
-                    }
-                }
-            }
+            using var memoryStream = new MemoryStream(buffer);
+            using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+            using var streamReader = new StreamReader(cryptoStream);
+
+            return streamReader.ReadToEnd();
+        }
+
+        private static Aes GetAes()
+        {
+            var iv = new byte[16];
+            var key = GetKey();
+
+            var aes = Aes.Create();
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.IV = iv;
+            aes.Padding = PaddingMode.PKCS7;
+
+            return aes;
         }
     }
 }

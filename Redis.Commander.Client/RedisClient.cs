@@ -21,6 +21,15 @@ namespace Redis.Commander.Client
             return await db.StringGetAsync(key);
         }
 
+        public async Task DeleteAsync(Connection connection, string key)
+        {
+            using var redis = GetRedis(connection);
+
+            var db = redis.GetDatabase();
+
+            await db.KeyDeleteAsync(key);
+        }
+
         private ConnectionMultiplexer GetRedis(Connection connection)
         {
             var redis = ConnectionMultiplexer.Connect(new ConfigurationOptions()

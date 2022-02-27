@@ -8,7 +8,7 @@
         <div class="form-group row" style="background-color: rgb(39 39 39); margin-left: -15px; margin-right: -15px; padding-top: 15px; padding-bottom: 15px;">
             <h6 class="control-label col-4" style="color: white;">Connection</h6>
             <div class="col-8">
-                <InputSelect class="form-control" @bind-Value="SelectedConnection.Id" @onchange="HandleSelectedConnectionChangedAsync">
+                <InputSelect class="form-control" @bind-Value="SelectedConnection.Id">
                     @foreach (var connection in Connections)
                         {
                         <option value="@connection.Id">@connection.Name</option>
@@ -83,6 +83,7 @@
 
         <button type="submit" class="btn btn-primary">Save</button>
         <button type="button" class="btn btn-success" @onclick="HandleRunClickAsync">Run</button>
+        <button type="button" class="btn btn-danger" @onclick="HandleDeleteClickAsync">Delete</button>
     </EditForm>
 </section>
 
@@ -158,6 +159,22 @@
         return matches.Select(m => m.Value.Replace("{", "").Replace("}", "")).ToArray();
     }
 
+    private string PopulateKey()
+    {
+        if (GetCommandParams().Count() != CommandParams.Keys.Count)
+        {
+            throw new InvalidOperationException("Some key parameters do not have a value.");
+        }
+
+        var key = Command.Key.ToString(); // make a copy of the key
+        foreach (var param in CommandParams)
+        {
+            key = key.Replace($"{{{param.Key}}}", param.Value);
+        }
+
+        return key;
+    }
+
     public void HandleCommandParamChanged(string param, string value)
     {
         if (string.IsNullOrWhiteSpace(value) && CommandParams.ContainsKey(param))
@@ -170,22 +187,45 @@
 
     public async Task HandleRunClickAsync()
     {
-        if (GetCommandParams().Count() != CommandParams.Keys.Count)
-        {
-            AppState.Alert.ShowDanger("Some key parameters do not have a value.");
-            return;
-        }
-
-        var key = Command.Key.ToString(); // make a copy of the key
-        foreach (var param in CommandParams)
-        {
-            key.Replace($"{{{param.Key}}}", param.Value);
-        }
-
         try
         {
+            var key = PopulateKey();
+            await HandleSelectedConnectionChangedAsync(); // repopulate the connection
+
             var result = await RedisClient.GetAsync(SelectedConnection, key);
+
+            if (result == null)
+            {
+                AppState.Alert.ShowWarning("Key does not exist.");
+            }
+
             Result = result;
+        }
+        catch (InvalidOperationException iex)
+        {
+            AppState.Alert.ShowDanger(iex.Message);
+        }
+        catch (Exception ex)
+        {
+            Result = ex.ToString();
+            AppState.Alert.ShowDanger("Redis client error. See result for details.");
+        }
+    }
+
+    public async Task HandleDeleteClickAsync()
+    {
+        try
+        {
+            var key = PopulateKey();
+            await HandleSelectedConnectionChangedAsync(); // repopulate the connection
+
+            await RedisClient.DeleteAsync(SelectedConnection, key);
+            Result = String.Empty;
+            AppState.Alert.ShowSuccess($"{key} deleted successfully.");
+        }
+        catch (InvalidOperationException iex)
+        {
+            AppState.Alert.ShowDanger(iex.Message);
         }
         catch (Exception ex)
         {
@@ -196,6 +236,11 @@
 
     public async Task HandleSelectedConnectionChangedAsync()
     {
+        if (SelectedConnection.Id == 0)
+        {
+            throw new InvalidOperationException("Please select a connection before executing a command.");
+        }
+
         SelectedConnection = await ConnectionRepository.GetAsync(SelectedConnection.Id);
     }
 
@@ -220,4 +265,4 @@
     {
         AppState.Alert.ShowDanger("There are some errors on the form.");
     }
-    }
+}

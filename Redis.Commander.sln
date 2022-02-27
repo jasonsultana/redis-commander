@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Commander.Client.Cont
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Commander.Client", "Redis.Commander.Client\Redis.Commander.Client.csproj", "{EA4BA6DD-4065-4062-80D9-D99AD01D4582}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2BA043E7-40B7-473F-BCD3-B35133A257DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Commander.Utils.Unit.Tests", "Redis.Commander.Utils.Unit.Tests\Redis.Commander.Utils.Unit.Tests.csproj", "{63373D1E-A7D0-46A4-91B5-412A4662A78B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,11 +55,18 @@ Global
 		{EA4BA6DD-4065-4062-80D9-D99AD01D4582}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA4BA6DD-4065-4062-80D9-D99AD01D4582}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA4BA6DD-4065-4062-80D9-D99AD01D4582}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63373D1E-A7D0-46A4-91B5-412A4662A78B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63373D1E-A7D0-46A4-91B5-412A4662A78B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63373D1E-A7D0-46A4-91B5-412A4662A78B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63373D1E-A7D0-46A4-91B5-412A4662A78B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7A238629-D4D6-406A-AA62-576EF88BBEEB}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{63373D1E-A7D0-46A4-91B5-412A4662A78B} = {2BA043E7-40B7-473F-BCD3-B35133A257DA}
 	EndGlobalSection
 EndGlobal

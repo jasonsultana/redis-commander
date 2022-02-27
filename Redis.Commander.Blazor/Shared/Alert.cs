@@ -42,5 +42,14 @@ namespace Redis.Commander.Blazor.Shared
 
             NotifyStateChanged();
         }
+
+        public void ShowWarning(string message)
+        {
+            StatusClass = "alert-warning";
+            StatusMessage = message;
+            IsVisible = true;
+
+            NotifyStateChanged();
+        }
     }
 }

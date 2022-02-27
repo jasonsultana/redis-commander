@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Redis.Commander.Blazor.Data;
 using Redis.Commander.Blazor.Shared;
 using Redis.Commander.Blazor.Shared.State;
 using Redis.Commander.Client;
