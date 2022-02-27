@@ -145,6 +145,10 @@
         {
             Command = new Command();
         }
+
+        // If the command has changed, reset the params and clear the result
+        CommandParams = new Dictionary<string, string>();
+        Result = String.Empty;
     }
 
     private string[] GetCommandParams()
