@@ -14,5 +14,9 @@ electronize build /target osx
 electronize build /target linux
 ```
 
+# FAQs
+## I get `Cannot find module 'fs/promises'` when running `electronize build`
+Most likely your Node version is too old. Try using NodeJS v16 or later.
+
 # links
 https://github.com/ElectronNET/Electron.NET
